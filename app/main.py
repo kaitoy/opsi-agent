@@ -5,7 +5,7 @@ from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders.sitemap import SitemapLoader
 from langchain_community.vectorstores.inmemory import InMemoryVectorStore
-from langchain_openai import OpenAI, OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 
 input = sys.argv[1]
 
@@ -26,5 +26,7 @@ index = VectorstoreIndexCreator(
     text_splitter=text_splitter,
 ).from_loaders([loader])
 
-response = index.query(input, OpenAI(temperature=0))
+retriever = index.vectorstore.as_retriever()
+
+response = retriever.invoke(input)
 print(response)
