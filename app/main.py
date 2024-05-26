@@ -1,6 +1,6 @@
-import sys
-
 import nest_asyncio
+import uvicorn
+from fastapi import FastAPI
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.indexes import VectorstoreIndexCreator
@@ -9,8 +9,8 @@ from langchain_community.document_loaders.sitemap import SitemapLoader
 from langchain_community.vectorstores.inmemory import InMemoryVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langserve import add_routes
 
-input = sys.argv[1]
 
 nest_asyncio.apply()
 
@@ -49,7 +49,15 @@ prompt = ChatPromptTemplate.from_messages([
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 chain = create_retrieval_chain(retriever, create_stuff_documents_chain(llm, prompt))
 
-response = chain.invoke({
-    "input": input,
-})
-print(response)
+app = FastAPI(
+    title="Ops I Assistant",
+    version="1.0",
+    description="Ops I Assistant",
+)
+add_routes(
+    app,
+    chain,
+    path="/opsi",
+)
+
+uvicorn.run(app, host="localhost", port=8080)

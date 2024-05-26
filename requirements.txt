@@ -5,3 +5,6 @@ langchain-community
 nest_asyncio
 lxml
 beautifulsoup4
+langserve[server]
+fastapi
+uvicorn[standard]
