@@ -1,3 +1,7 @@
 langchain
 openai
 langchain-openai
+langchain-community
+nest_asyncio
+lxml
+beautifulsoup4
