@@ -1,6 +1,7 @@
 import sys
 
 import nest_asyncio
+from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.indexes import VectorstoreIndexCreator
 from langchain.text_splitter import CharacterTextSplitter
@@ -46,10 +47,9 @@ prompt = ChatPromptTemplate.from_messages([
     )
 ])
 llm = ChatOpenAI(model="gpt-3.5-turbo")
-chain = create_stuff_documents_chain(llm, prompt)
+chain = create_retrieval_chain(retriever, create_stuff_documents_chain(llm, prompt))
 
 response = chain.invoke({
     "input": input,
-    "context": retriever.invoke(input),
 })
 print(response)
