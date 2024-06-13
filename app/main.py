@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.indexes import VectorstoreIndexCreator
+from langchain.pydantic_v1 import BaseModel
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders.sitemap import SitemapLoader
 from langchain_community.vectorstores.inmemory import InMemoryVectorStore
@@ -49,6 +50,8 @@ prompt = ChatPromptTemplate.from_messages([
 llm = ChatOpenAI(model="gpt-3.5-turbo")
 chain = create_retrieval_chain(retriever, create_stuff_documents_chain(llm, prompt))
 
+class ChainInput(BaseModel):
+    input: str
 app = FastAPI(
     title="Ops I Assistant",
     version="1.0",
@@ -56,7 +59,7 @@ app = FastAPI(
 )
 add_routes(
     app,
-    chain,
+    chain.with_types(input_type=ChainInput),
     path="/opsi",
 )
 
