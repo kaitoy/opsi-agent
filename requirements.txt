@@ -8,3 +8,4 @@ beautifulsoup4
 langserve[server]
 fastapi
 uvicorn[standard]
+langchain-postgres

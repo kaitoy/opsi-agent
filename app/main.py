@@ -7,9 +7,9 @@ from langchain.indexes import VectorstoreIndexCreator
 from langchain.pydantic_v1 import BaseModel
 from langchain.text_splitter import CharacterTextSplitter
 from langchain_community.document_loaders.sitemap import SitemapLoader
-from langchain_community.vectorstores.inmemory import InMemoryVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_postgres.vectorstores import PGVector
 from langserve import add_routes
 
 
@@ -25,9 +25,14 @@ text_splitter = CharacterTextSplitter(
 loader = SitemapLoader(web_path="https://itpfdoc.hitachi.co.jp/manuals/JCS/JCSM71020002/sitemap.xml")
 
 index = VectorstoreIndexCreator(
-    vectorstore_cls=InMemoryVectorStore,
+    vectorstore_cls=PGVector,
     embedding=OpenAIEmbeddings(),
     text_splitter=text_splitter,
+    vectorstore_kwargs={
+        "collection_name": "opsi_manual",
+        "connection": "postgresql+psycopg://langchain:langchain@postgres:5432/langchain",
+        "use_jsonb": True,
+    }
 ).from_loaders([loader])
 
 retriever = index.vectorstore.as_retriever()
@@ -63,4 +68,4 @@ add_routes(
     path="/opsi",
 )
 
-uvicorn.run(app, host="localhost", port=8080)
+uvicorn.run(app, host="0.0.0.0", port=8080)
