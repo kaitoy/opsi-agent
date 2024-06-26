@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "opsi-agent.fullname" . }}-postgres
+  labels:
+    {{- include "opsi-agent-postgres.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "opsi-agent-postgres.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "opsi-agent.fullname" . }}-postgres
+  template:
+    metadata:
+      labels:
+        {{- include "opsi-agent-postgres.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: postgres
+        env:
+        - name: POSTGRESQL_PORT_NUMBER
+          value: "5432"
+        - name: PGDATA
+          value: /var/lib/pgsql/data
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "opsi-agent.fullname" . }}-postgres
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "opsi-agent.fullname" . }}-postgres
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          value: {{ .Values.postgres.db }}
+        image: pgvector/pgvector:0.7.2-pg16
+        ports:
+        - name: postgres
+          containerPort: 5432
+          protocol: TCP
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "${POSTGRES_USER}" -h 127.0.0.1 -p 5432
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - exec pg_isready -U "${POSTGRES_USER}" -h 127.0.0.1 -p 5432
+        volumeMounts:
+        - name: postgres
+          mountPath: /var/lib/pgsql/data
+  volumeClaimTemplates:
+  - metadata:
+      name: postgres
+    spec:
+      accessModes: {{ .Values.postgres.persistence.accessModes }}
+      storageClassName: {{ .Values.postgres.persistence.storageClassName }}
+      resources:
+        requests:
+          storage: {{ .Values.postgres.persistence.size }}
+      {{- with .Values.postgres.persistence.selectorLabels }}
+      selector:
+        matchLabels:
+          {{- toYaml . | nindent 10 }}
+      {{- end }}

@@ -1,0 +1,26 @@
+replicaCount: 1
+
+image:
+  repository: kaitoy/opsi-agent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+postgres:
+  persistence:
+    storageClassName: local
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    # selectorLabels: {}
+  user: langchain
+  password: langchain
+  db: langchain
+
+openai_api_key: sk-proj-xxxxxxxxxxxxxxxxxxx

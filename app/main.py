@@ -1,6 +1,6 @@
 import nest_asyncio
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.indexes import VectorstoreIndexCreator
@@ -30,7 +30,7 @@ index = VectorstoreIndexCreator(
     text_splitter=text_splitter,
     vectorstore_kwargs={
         "collection_name": "opsi_manual",
-        "connection": "postgresql+psycopg://langchain:langchain@postgres:5432/langchain",
+        "connection": "postgresql+psycopg://langchain:langchain@opsi-agent-postgres:5432/langchain",
         "use_jsonb": True,
     }
 ).from_loaders([loader])
@@ -67,5 +67,19 @@ add_routes(
     chain.with_types(input_type=ChainInput),
     path="/opsi",
 )
+
+class HealthCheck(BaseModel):
+    status: str = "OK"
+
+@app.get(
+    "/healthz",
+    tags=["healthcheck"],
+    summary="Perform a Health Check",
+    response_description="Return HTTP Status Code 200 (OK)",
+    status_code=status.HTTP_200_OK,
+    response_model=HealthCheck,
+)
+def get_health() -> HealthCheck:
+    return HealthCheck(status="OK")
 
 uvicorn.run(app, host="0.0.0.0", port=8080)
