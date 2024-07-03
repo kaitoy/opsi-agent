@@ -33,6 +33,7 @@ index = VectorstoreIndexCreator(
         "collection_name": "opsi_manual",
         "connection": "postgresql+psycopg://langchain:langchain@opsi-agent-postgres:5432/langchain",
         "use_jsonb": True,
+        "async_mode": True,
     }
 ).from_loaders([loader])
 
