@@ -11,6 +11,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_postgres.vectorstores import PGVector
 from langserve import add_routes
+from pydantic import BaseModel as BaseModelV2
 
 
 nest_asyncio.apply()
@@ -68,9 +69,8 @@ add_routes(
     path="/opsi",
 )
 
-class HealthCheck(BaseModel):
+class HealthCheck(BaseModelV2):
     status: str = "OK"
-
 @app.get(
     "/healthz",
     tags=["healthcheck"],
