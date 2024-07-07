@@ -1,3 +1,5 @@
+import asyncio
+
 import nest_asyncio
 import uvicorn
 from fastapi import FastAPI, status
@@ -13,7 +15,6 @@ from langchain_postgres.vectorstores import PGVector
 from langserve import add_routes
 from pydantic import BaseModel as BaseModelV2
 
-
 nest_asyncio.apply()
 
 text_splitter = CharacterTextSplitter(
@@ -25,7 +26,7 @@ text_splitter = CharacterTextSplitter(
 
 loader = SitemapLoader(web_path="https://itpfdoc.hitachi.co.jp/manuals/JCS/JCSM71020002/sitemap.xml")
 
-index = VectorstoreIndexCreator(
+vic = VectorstoreIndexCreator(
     vectorstore_cls=PGVector,
     embedding=OpenAIEmbeddings(),
     text_splitter=text_splitter,
@@ -33,9 +34,9 @@ index = VectorstoreIndexCreator(
         "collection_name": "opsi_manual",
         "connection": "postgresql+psycopg://langchain:langchain@opsi-agent-postgres:5432/langchain",
         "use_jsonb": True,
-        "async_mode": True,
     }
-).from_loaders([loader])
+)
+index = asyncio.run(vic.afrom_loaders([loader]))
 
 retriever = index.vectorstore.as_retriever()
 
